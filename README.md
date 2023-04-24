@@ -19,6 +19,6 @@ This is a subclass of IPoolInterface, it is used to define the actor's behavior 
 You can define your own interface by inheriting from IPoolInterface, such as **IPoolPawnInterface**, **IPoolCharacterInterface**. But notice that you must really know the lifetime and behavior of the object you want to pool, you can see details in the **IPoolActorInterface**, see what is done in function ***ReleaseToPool, AttachToLevel, OnObjectNew***, and you must do the same thing in your own interface.
 ### 2.3 Actors
 #### 2.3.1 LevelLoadObjectPoolActor
-This actor is a normal actor spawned by ***UWorld::SpawnActor***, used to register and unregister the object pool defined by **LevelObjectPoolDataAsset** when this actor BeginPlay and EndPlay. You can spawn and destroy it in level blueprint.
+This actor is a normal actor spawned by ***UWorld::SpawnActor***, used to register and unregister the object pool defined by **LevelObjectPoolDataAsset** when this actor BeginPlay and EndPlay. You can control the lifetime of the object pool by spawn and destroy this actor.
 #### 2.3.2 PoolActor
 This Actor can be spawned by ***UObjectPoolSubsystem::SpawnActor***, do not call this actor's ***Destroy*** function, use ***ReleaseToPool*** instead, if you called ***Destroy***, will crash in ***IPoolActorInterface::AbortActorDestroy*** 
