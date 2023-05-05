@@ -44,7 +44,7 @@ void AActorSpawnPerformanceTest::Tick(float DeltaTime)
     UE_LOG(LogObjectPool, Log, TEXT("Actor Array Size: %d"), GetLevel()->Actors.Num());
 }
 
-void TestFinishSpawning(AActor* actor)
+void AActorSpawnPerformanceTest::TestFinishSpawning(AActor* actor)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::FinishSpawning);
     {
