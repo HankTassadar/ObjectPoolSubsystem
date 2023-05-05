@@ -21,6 +21,7 @@
     (5) EndPlay
     (6) 销毁 Actor
     (7) Actor 被 GC 回收
+
 上述过程中， Actor 的 New ，初始化与 BeginPlay 通常是一起完成的，当延迟生成时会分开完成，EndPlay 与销毁 Actor 通常是一起完成的。
 
 ### 1.2 Actor 的生成
@@ -154,6 +155,86 @@ void AActor::FinishSpawning(const FTransform& UserTransform, bool bIsDefaultTran
     }
 }
 ```
-上述，如果生成的 Actor 比较复杂，那么性能消耗会更大。
 
-## 2. Actor 的 Tick
+ExecuteConstruction 中对这个 Actor 拥有的 Component 进行了生成，包括一些蓝图中的组件以及调用蓝图的 ConstructionScript。
+PostActorConstruction 主要进行一些初始化操作，并调用了 BeginPlay。
+
+为具体查看这两个过程的消耗，我们使用 AActorSpawnPerformanceTest::TestFinishSpawning 来替换这个 AActor::FinishSpawning ，结果如下：
+
+![image](./Image/TestFinishSpawning.PNG)
+
+可以看到， ExecuteConstruction 占用了 FinishSpawning 95% 的消耗，而 PostActorConstruction 只占用了 5% 的消耗。
+
+上述，如果生成的 Actor 比较复杂，拥有的组件很多，那么在 ExecuteConstruction 时性能消耗会更大。
+
+### 1.4 Actor 的销毁
+
+销毁 Acotr 时我们需要调用 AActor::Destroy ，但实际上的销毁逻辑在 UWorld::DestroyActor ，这个函数的什么如下：
+    
+```cpp
+bool DestroyActor( AActor* Actor, bool bNetForce=false, bool bShouldModifyLevel=true );
+```
+
+省略一些非重点内容，我们看一下销毁流程：
+
+```cpp
+bool UWorld::DestroyActor( AActor* ThisActor, bool bNetForce, bool bShouldModifyLevel )
+{
+...
+//一些是否可销毁的判断
+...
+    OnActorDestroyed.Broadcast(ThisActor);
+
+    // Tell this actor it's about to be destroyed.
+    ThisActor->Destroyed();
+...
+// Detach this actor's children, 释放所有的子 Actor
+...
+// Detach from anything we were attached to，从父 Actor 中释放
+...
+    ThisActor->ClearComponentOverlaps();
+...
+//一下NetDriver相关的内容
+...
+    // Remove the actor from the actor list.
+    RemoveActor( ThisActor, bShouldModifyLevel );
+...
+    // Clean up the actor's components.
+    ThisActor->UnregisterAllComponents();
+
+    // Mark the actor and its direct components as pending kill.
+    ThisActor->MarkAsGarbage();
+    ThisActor->MarkPackageDirty();
+    ThisActor->MarkComponentsAsPendingKill();
+
+    // Unregister the actor's tick function
+    const bool bRegisterTickFunctions = false;
+    const bool bIncludeComponents = true;
+    ThisActor->RegisterAllActorTickFunctions(bRegisterTickFunctions, bIncludeComponents);
+
+    // Return success.
+    return true;
+}
+```
+
+主要流程为 Actor 调用 Destroyed 来调用 EndPlay ，然后清理组件重叠，从关卡的 ActorList 中移除，取消注册组件，标记为垃圾，取消注册 Tick。
+
+### 1.5 Actor 销毁的性能消耗
+
+我们来对比一下测试刚开始时的 Tick 和测试快结束时的 Tick。
+刚开始时：
+
+![image](./Image/DestroyBegin.PNG)
+
+快结束时：
+
+![image](./Image/DestroyEnd.PNG)
+
+可以看出销毁相同数量的 Actor ，所用的事件越来越长。
+我们导出销毁的数据，将其绘制成图表如下：
+
+![image](./Image/DestroyTime.png)
+
+销毁单个 Actor 的时间消耗从开始的 10us 左右，到最后的 175us 左右。并且60s 时销毁时间突降至刚开始的水平。
+
+## 2. ActorPool的必要性

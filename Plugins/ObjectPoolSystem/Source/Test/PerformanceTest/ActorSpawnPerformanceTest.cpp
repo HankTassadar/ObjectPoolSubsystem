@@ -44,6 +44,21 @@ void AActorSpawnPerformanceTest::Tick(float DeltaTime)
     UE_LOG(LogObjectPool, Log, TEXT("Actor Array Size: %d"), GetLevel()->Actors.Num());
 }
 
+void TestFinishSpawning(AActor* actor)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::FinishSpawning);
+    {
+        TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::FinishSpawning_ExecuteConstruction);
+        FEditorScriptExecutionGuard ScriptGuard;
+        actor->ExecuteConstruction(FTransform(), nullptr, nullptr, false);
+    }
+
+    {
+        TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::FinishSpawning_PostActorConstruction);
+        actor->PostActorConstruction();
+    }
+};
+
 AActor* AActorSpawnPerformanceTest::SpawnActors()
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::SpawnActors);
@@ -79,7 +94,8 @@ AActor* AActorSpawnPerformanceTest::SpawnActors()
 
     {
         TRACE_CPUPROFILER_EVENT_SCOPE(AActorSpawnPerformanceTest::SpawnActors_FinishSpawning);
-        actor->FinishSpawning(FTransform());
+        TestFinishSpawning(actor);
+        //actor->FinishSpawning(FTransform());
     }
 
     return actor;

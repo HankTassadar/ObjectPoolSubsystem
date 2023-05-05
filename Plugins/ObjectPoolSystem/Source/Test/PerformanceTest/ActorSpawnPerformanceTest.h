@@ -32,6 +32,8 @@ public:
 private:
     AActor* SpawnActors();
 
+    void TestFinishSpawning(AActor* actor);
+
     int32 SpawnNameUnique = 0;
 
     UPROPERTY()
