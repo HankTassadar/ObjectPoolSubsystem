@@ -169,7 +169,7 @@ PostActorConstruction 主要进行一些初始化操作，并调用了 BeginPlay
 
 ### 1.4 Actor 的销毁
 
-销毁 Acotr 时我们需要调用 AActor::Destroy ，但实际上的销毁逻辑在 UWorld::DestroyActor ，这个函数的什么如下：
+销毁 Acotr 时我们需要调用 AActor::Destroy ，但实际上的销毁逻辑在 UWorld::DestroyActor ，这个函数的声明如下：
     
 ```cpp
 bool DestroyActor( AActor* Actor, bool bNetForce=false, bool bShouldModifyLevel=true );
@@ -236,5 +236,6 @@ bool UWorld::DestroyActor( AActor* ThisActor, bool bNetForce, bool bShouldModify
 ![image](./Image/DestroyTime.png)
 
 销毁单个 Actor 的时间消耗从开始的 10us 左右，到最后的 175us 左右。并且60s 时销毁时间突降至刚开始的水平。
+
 
 ## 2. ActorPool的必要性
