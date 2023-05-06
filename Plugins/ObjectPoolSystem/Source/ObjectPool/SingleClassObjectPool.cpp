@@ -123,6 +123,8 @@ void USingleClassObjectPool::UnRegister(UPoolClassDataAsset* PoolClassDataAsset)
             //let the object can be GC
             Chunk->Object->RemoveFromRoot();
             Chunk->Object->MarkAsGarbage();
+            IPoolInterface* PoolInterface = CastChecked<IPoolInterface>(Chunk->Object);
+            PoolInterface->OnObjectDestroy();
             Chunk->ReSet();
         }
     }

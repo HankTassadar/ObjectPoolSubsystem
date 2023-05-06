@@ -19,3 +19,7 @@ void IPoolInterface::ReleaseToPool()
 void IPoolInterface::OnNewObject()
 {
 }
+
+void IPoolInterface::OnObjectDestroy()
+{
+}

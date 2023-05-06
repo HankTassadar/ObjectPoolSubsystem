@@ -53,6 +53,18 @@ void IPoolActorInterface::OnNewObject()
     //this->ReleaseToPool();
 }
 
+void IPoolActorInterface::OnObjectDestroy()
+{
+    AActor* self = GetActor();
+    if (!self)
+    {
+        UE_LOG(LogObjectPool, Error, TEXT("Pool Actor Should attach to level but self is null, it is not an AActor's childclass"));
+        return;
+    }
+
+    self->MarkComponentsAsPendingKill();
+}
+
 bool IPoolActorInterface::AttachToLevel(ULevel* levelSpawnIn, const FTransform& transform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride)
 {
     if (!levelSpawnIn)

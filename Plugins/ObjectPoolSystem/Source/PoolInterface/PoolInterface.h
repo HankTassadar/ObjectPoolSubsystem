@@ -39,6 +39,11 @@ private:
     */
     virtual void OnNewObject();
 
+    /*
+    * called on object real destroy
+    * could be override by subclassinterface
+    */
+    virtual void OnObjectDestroy();
 private:
 
 

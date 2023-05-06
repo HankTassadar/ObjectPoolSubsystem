@@ -38,7 +38,9 @@ public:
 private:
     //when new actor, do some init work
     virtual void OnNewObject() override;
-
+    
+    //when actor destroyed do some clean work
+    virtual void OnObjectDestroy() override;
 private:
     //the follows functions are only used by ObjectPoolSubsystem, so make it private
     friend class UObjectPoolSubsystem;
