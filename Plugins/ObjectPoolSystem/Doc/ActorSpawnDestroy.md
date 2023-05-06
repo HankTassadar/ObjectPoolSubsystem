@@ -230,7 +230,7 @@ bool UWorld::DestroyActor( AActor* ThisActor, bool bNetForce, bool bShouldModify
 
 ![image](./Image/DestroyEnd.PNG)
 
-可以看出销毁相同数量的 Actor ，所用的事件越来越长。
+可以看出销毁相同数量的 Actor ，所用的时间越来越长。
 我们导出销毁的数据，将其绘制成图表如下：
 
 ![image](./Image/DestroyTime.png)
@@ -273,9 +273,9 @@ void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel) const
 
 从代码中可以看到从 ULevel::Actors 中查找到 Actor 的索引，只是将这个索引对应的元素置空，并没有将这个元素从数组中移除，可以想象，随着我们不断的生成与销毁 Actor ，这个数组会越来越大，而且数组中会有很多空元素，这样在查找时就会消耗更多的时间。
 
-在测试的 Tick 中，我们每一次 Tick 使用日志记录了 ActorList 的长度，将其绘制成图表如下：
+在测试的 Tick 中，我们每一次 Tick 使用日志记录了 ActorList 的长度，将其绘制成图表并与上图进行对比：
 
-![image](./Image/ActorsSize.png)
+![image](./Image/DestroyTimeAndActorsCount.png)
 
 对比上面两张图，可以判断出销毁时间与 ActorList 的长度成正相关。性能的消耗确实在这个数组的查找上。
 
