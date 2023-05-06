@@ -70,12 +70,10 @@ bool USingleClassObjectPool::Register(UPoolClassDataAsset* PoolClassDataAsset, T
             //Log info
             //UE_LOG(LogObjectPool, Log, TEXT("New Object succeed, ClassName: [%s], ObjectName: [%s]"), *ObjectClass->GetName(), *Chunk->Object->GetName());
             IPoolInterface* PoolInterface = CastChecked<IPoolInterface>(Chunk->Object);
-            if (PoolInterface)
-            {
-                PoolInterface->OnNewObject();
-                PoolInterface->pool = this;
-                PoolInterface->node = Node;
-            }
+            PoolInterface->OnNewObject();
+            PoolInterface->pool = this;
+            PoolInterface->node = Node;
+
             Chunk->Object->AddToRoot();
         }
         else
@@ -104,10 +102,7 @@ void USingleClassObjectPool::UnRegister(UPoolClassDataAsset* PoolClassDataAsset)
         if (nullptr != Chunk->Object)
         {
             IPoolInterface* PoolInterface = CastChecked<IPoolInterface>(Chunk->Object);
-            if (PoolInterface)
-            {
-                PoolInterface->ReleaseToPool();
-            }
+            PoolInterface->ReleaseToPool();
         }
     }
     UsedChain.Empty();
