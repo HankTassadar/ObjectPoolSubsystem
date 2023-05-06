@@ -235,7 +235,50 @@ bool UWorld::DestroyActor( AActor* ThisActor, bool bNetForce, bool bShouldModify
 
 ![image](./Image/DestroyTime.png)
 
-销毁单个 Actor 的时间消耗从开始的 10us 左右，到最后的 175us 左右。并且60s 时销毁时间突降至刚开始的水平。
+销毁单个 Actor 的时间消耗从开始的 10us 左右，到最后的 175us 左右。并且 60s 时销毁时间突降至刚开始的水平。
 
+从图中可以看出单次销毁时间呈线性增长，但单次生成时间没有太多变化。这是因为生成时将 Actor 添加到了 Level 的 ActorList(ULevel::Actors, ULevel::ActorsForGC) 中，而销毁时需要从 ActorList 中移除，ActorList 是一个数组，销毁时从数组中查找占用了大量时间， 随着 ActorList 的增长，查找的时间也会增长。
+
+我们仔细看一下销毁时从 ActorList 中移除的函数 RemoveActor ：
+
+```cpp
+void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel) const
+{
+    if (ULevel* CheckLevel = Actor->GetLevel())
+    {
+        const int32 ActorListIndex = CheckLevel->Actors.Find(Actor);
+        // Search the entire list.
+        if (ActorListIndex != INDEX_NONE)
+        {
+            if (bShouldModifyLevel && GUndo)
+            {
+                ModifyLevel(CheckLevel);
+            }
+
+            if (!IsGameWorld())
+            {
+                CheckLevel->Actors[ActorListIndex]->Modify();
+            }
+
+            CheckLevel->Actors[ActorListIndex] = nullptr;
+
+            CheckLevel->ActorsForGC.RemoveSwap(Actor);
+        }
+    }
+
+    // Remove actor from network list
+    RemoveNetworkActor( Actor );
+}
+```
+
+从代码中可以看到从 ULevel::Actors 中查找到 Actor 的索引，只是将这个索引对应的元素置空，并没有将这个元素从数组中移除，可以想象，随着我们不断的生成与销毁 Actor ，这个数组会越来越大，而且数组中会有很多空元素，这样在查找时就会消耗更多的时间。
+
+在测试的 Tick 中，我们每一次 Tick 使用日志记录了 ActorList 的长度，将其绘制成图表如下：
+
+![image](./Image/ActorsSize.png)
+
+对比上面两张图，可以判断出销毁时间与 ActorList 的长度成正相关。性能的消耗确实在这个数组的查找上。
+
+在 60s 时销毁时间降至刚开始的水平，这是因为在 60s 时触发了垃圾收集，在收集垃圾后对ActorList 进行了收缩，移除了所有的空元素。
 
 ## 2. ActorPool的必要性
