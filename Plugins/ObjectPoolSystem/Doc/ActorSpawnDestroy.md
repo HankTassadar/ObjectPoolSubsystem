@@ -1,4 +1,4 @@
-# Actor 的生成与销毁 ，以及 ActorPool 的必要性
+# Actor 生成与销毁性能 ，以及 ActorPool 的必要性
 
  说明：以下示例代码来自于 Unreal Engine 5.1.1，ObjectPool代码以及测试蓝图来自 ***[对象池子系统插件](https://github.com/HankTassadar/ObjectPoolSubsystem "对象池子系统插件")*** ，以下关于性能的讨论只针对GameThread。
 
@@ -19,7 +19,7 @@
     (3) BeginPlay
     (4) Tick，响应输入与事件
     (5) EndPlay
-    (6) 销毁 Actor
+    (6) 销毁 Actor，等待 GC
     (7) Actor 被 GC 回收
 
 上述过程中， Actor 的 New ，初始化与 BeginPlay 通常是一起完成的，当延迟生成时会分开完成，EndPlay 与销毁 Actor 通常是一起完成的。
@@ -77,7 +77,7 @@ AActor* UWorld::SpawnActor( UClass* Class, FTransform const* UserTransformPtr, c
 
 ### 1.3 Actor 生成的性能消耗
 
-接下来我们使用  ***[对象池子系统插件](https://github.com/HankTassadar/ObjectPoolSubsystem "对象池子系统插件")*** 中的 BP_PerformanceTest 来测试一下生成过程中各个函数的性能消耗，测试中生成的是一个只有一个 StaticMeshComponent 的 Actor。简化 SpawnActor 的流程到 ActorSpawnPerformanceTest::SpawnActors 中，然后每 Tick 生成固定数量的 Actor ，然后销毁掉。使用 TRACE_CPUPROFILER_EVENT_SCOPE 宏来测量各个过程的消耗。
+接下来我们使用  ***[对象池子系统插件](https://github.com/HankTassadar/ObjectPoolSubsystem "对象池子系统插件")*** 中的 BP_PerformanceTest 来测试一下生成过程中各个函数的性能消耗，测试中生成的是一个只有一个 StaticMeshComponent 的 Actor， 每 Tick 生成 100 个该对象。简化 SpawnActor 的流程到 ActorSpawnPerformanceTest::SpawnActors 中，然后每 Tick 生成固定数量的 Actor ，然后销毁掉。使用 TRACE_CPUPROFILER_EVENT_SCOPE 宏来测量各个过程的消耗。
 
 使用 Unreal Insights 查看性能消耗，截取其中一次 Tick 如下：
 ![image](./Image/Tick.PNG)
@@ -165,7 +165,7 @@ PostActorConstruction 主要进行一些初始化操作，并调用了 BeginPlay
 
 可以看到， ExecuteConstruction 占用了 FinishSpawning 95% 的消耗，而 PostActorConstruction 只占用了 5% 的消耗。
 
-上述，如果生成的 Actor 比较复杂，拥有的组件很多，那么在 ExecuteConstruction 时性能消耗会更大。
+如果生成的 Actor 比较复杂，拥有的组件很多，那么在 ExecuteConstruction 时性能消耗会更大。
 
 ### 1.4 Actor 的销毁
 
@@ -281,4 +281,26 @@ void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel) const
 
 在 60s 时销毁时间降至刚开始的水平，这是因为在 60s 时触发了垃圾收集，在收集垃圾后对ActorList 进行了收缩，移除了所有的空元素。
 
+接下来我们看垃圾收集的情况，整个测试过程中 只有 60s 时触发了垃圾收集。
+
+![image](./Image/GarbageCollect.png)
+
+这次垃圾收集耗时极长，因为这一次收集了2-3万个 Actor，导致了这一帧一半以上的时间都用于 GC ，如果实际游戏中出现这么长的 GC ，会极大影响游戏体验。
+
+收集完成后进行垃圾处理，垃圾处理函数 IncrementalPurgeGarbage 的耗时的散点图如下：
+
+![image](./Image/GarbageTime.png)
+
+可以看到 60s 触发垃圾收集后，就一直以每 Tick 使用 2ms 销毁垃圾的速度进行，并且一直在处理没有间断直到测试终止。并且测试终止时出现了一次长达 5s 的垃圾销毁。
+
+这也能解释为什么只有 60s 的时候进行了 GC ，因为这一次的 GC 处理的对象太多了，之后一直到测试终止前都没有处理完第一次 GC 的对象。所以上面的 Actors Size 图表中看到 60s 时缩减了数组的长度，而之后一直在增加。
+
+如果一直以这个速率持续的生成销毁 Actor ，在这次 GC 彻底处理完成之前，不断的生成销毁会导致下一次 GC 需要处理的对象更多，然后恶性循环，始终有大量的对象等待 GC 处理，这样就会导致游戏的性能越来越差，直到崩溃。
+
+### 1.6 总结
+
+生成的过程中，很多步骤并不是一定要在使用这个对象的时候才进行，对于频繁使用的对象，完全可以在加载时就生成好。销毁时也一样，并非一定要把工作全都交给 GC ，多次复用同一个对象，可以减少 GC 的压力。
+
 ## 2. ActorPool的必要性
+
+## 3. ***[对象池子系统插件](https://github.com/HankTassadar/ObjectPoolSubsystem "对象池子系统插件")*** 的设计与实现
