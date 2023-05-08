@@ -289,7 +289,7 @@ void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel) const
 
 收集完成后进行垃圾处理，垃圾处理函数 IncrementalPurgeGarbage 的耗时的散点图如下：
 
-![image](./Image/GarbageTime.png)
+![image](./Image/GarbageTime.PNG)
 
 可以看到 60s 触发垃圾收集后，就一直以每 Tick 使用 2ms 销毁垃圾的速度进行，并且一直在处理没有间断直到测试终止。并且测试终止时出现了一次长达 5s 的垃圾销毁。
 
