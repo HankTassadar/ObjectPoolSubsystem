@@ -283,13 +283,13 @@ void UWorld::RemoveActor(AActor* Actor, bool bShouldModifyLevel) const
 
 接下来我们看垃圾收集的情况，整个测试过程中 只有 60s 时触发了垃圾收集。
 
-![image](./Image/GarbageCollect.png)
+![image](./Image/GarbageCollect.PNG)
 
 这次垃圾收集耗时极长，因为这一次收集了2-3万个 Actor，导致了这一帧一半以上的时间都用于 GC ，如果实际游戏中出现这么长的 GC ，会极大影响游戏体验。
 
 收集完成后进行垃圾处理，垃圾处理函数 IncrementalPurgeGarbage 的耗时的散点图如下：
 
-![image](./Image/GarbageTime.PNG)
+![image](./Image/GarbageTime.png)
 
 可以看到 60s 触发垃圾收集后，就一直以每 Tick 使用 2ms 销毁垃圾的速度进行，并且一直在处理没有间断直到测试终止。并且测试终止时出现了一次长达 5s 的垃圾销毁。
 
