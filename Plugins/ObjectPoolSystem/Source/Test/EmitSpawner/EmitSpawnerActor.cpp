@@ -2,8 +2,8 @@
 
 
 #include "EmitSpawnerActor.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
-#include "../ObjectPoolSubsystem.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
+#include "ObjectPoolSubsystem.h"
 
 // Sets default values
 AEmitSpawnerActor::AEmitSpawnerActor()

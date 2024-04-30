@@ -2,7 +2,7 @@
 
 
 #include "PoolInterface.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
 
 // Add default functionality here for any IPoolInterface functions that are not pure virtual.
 

@@ -3,7 +3,7 @@
 
 #include "LevelObjectPool.h"
 #include "Macro/ObjectPoolSystemMacro.h"
-#include "../DataAsset/LevelObjectPoolDataAsset.h"
+#include "DataAsset/LevelObjectPoolDataAsset.h"
 #include "SingleClassObjectPool.h"
 
 bool ULevelObjectPool::RegisterLevelObjectPool(ULevelObjectPoolDataAsset* LevelObjectPoolDataAsset)

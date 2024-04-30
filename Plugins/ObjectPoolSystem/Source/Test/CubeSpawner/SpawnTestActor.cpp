@@ -2,10 +2,10 @@
 
 
 #include "SpawnTestActor.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
-#include <UMG/Public/Blueprint/GameViewportSubsystem.h>
-#include "../PoolInterface/PoolInterface.h"
-#include "../ObjectPoolSubsystem.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
+#include "Blueprint/GameViewportSubsystem.h"
+#include "PoolInterface/PoolInterface.h"
+#include "ObjectPoolSubsystem.h"
 
 // Sets default values
 ASpawnTestActor::ASpawnTestActor()
@@ -35,7 +35,7 @@ void ASpawnTestActor::BeginPlay()
     if (SpawnTestUIInstance)
     {
         UIData = &SpawnTestUIInstance->UIData;
-        auto viewsubsystem = GetGameInstance()->GetSubsystem<UGameViewportSubsystem>();
+        auto viewsubsystem = GetGameInstance()->GetEngine()->GetEngineSubsystem<UGameViewportSubsystem>();
         if (viewsubsystem)
         {
             viewsubsystem->AddWidget(SpawnTestUIInstance, FGameViewportWidgetSlot());

@@ -2,7 +2,7 @@
 
 
 #include "SpawnTestUI.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
 
 void USpawnTestUI::ResetAll()
 {

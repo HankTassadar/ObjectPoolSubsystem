@@ -2,9 +2,9 @@
 
 
 #include "LevelObjectPoolDataAsset.h"
-#include "../ObjectPoolSubsystem.h"
+#include "ObjectPoolSubsystem.h"
 #include "Macro/ObjectPoolSystemMacro.h"
-#include "../PoolInterface/PoolInterface.h"
+#include "PoolInterface/PoolInterface.h"
 
 bool ULevelObjectPoolDataAsset::RegisterToObjectPoolSubsystem(ULevel* level)
 {

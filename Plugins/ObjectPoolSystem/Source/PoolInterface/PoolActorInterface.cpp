@@ -3,7 +3,7 @@
 
 #include "PoolActorInterface.h"
 #include "GameFrameWork/Actor.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
 
 void IPoolActorInterface::ReleaseToPool()
 {
@@ -62,7 +62,7 @@ void IPoolActorInterface::OnObjectDestroy()
         return;
     }
 
-    self->MarkComponentsAsPendingKill();
+    self->MarkComponentsAsGarbage();
 }
 
 bool IPoolActorInterface::AttachToLevel(ULevel* levelSpawnIn, const FTransform& transform, ESpawnActorCollisionHandlingMethod CollisionHandlingOverride)

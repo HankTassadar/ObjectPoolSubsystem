@@ -2,6 +2,6 @@
 
 
 #include "PoolClassDataAsset.h"
-#include "../PoolInterface/PoolInterface.h"
-#include "../Private/Macro/ObjectPoolSystemMacro.h"
+#include "PoolInterface/PoolInterface.h"
+#include "Private/Macro/ObjectPoolSystemMacro.h"
 

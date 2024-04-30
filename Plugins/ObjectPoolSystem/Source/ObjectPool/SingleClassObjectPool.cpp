@@ -3,8 +3,8 @@
 
 #include "SingleClassObjectPool.h"
 #include "Macro/ObjectPoolSystemMacro.h"
-#include "../DataAsset/PoolClassDataAsset.h"
-#include "../PoolInterface/PoolInterface.h"
+#include "DataAsset/PoolClassDataAsset.h"
+#include "PoolInterface/PoolInterface.h"
 #include "LevelObjectPool.h"
 
 bool USingleClassObjectPool::Init(UClass* Class, ULevel* level)

@@ -2,13 +2,12 @@
 
 
 #include "LevelLoadObjectPoolActor.h"
-#include <UMG/Public/Blueprint/GameViewportSubsystem.h>
-
+#include "Blueprint/GameViewportSubsystem.h"
 #include "Macro/ObjectPoolSystemMacro.h"
-#include "../DataAsset/LevelObjectPoolDataAsset.h"
-#include "../ObjectPool/LevelObjectPoolUI.h"
-#include "../ObjectPool/LevelObjectPool.h"
-#include "../ObjectPoolSubsystem.h"
+#include "DataAsset/LevelObjectPoolDataAsset.h"
+#include "ObjectPool/LevelObjectPoolUI.h"
+#include "ObjectPool/LevelObjectPool.h"
+#include "ObjectPoolSubsystem.h"
 
 // Sets default values
 ALevelLoadObjectPoolActor::ALevelLoadObjectPoolActor()
@@ -79,7 +78,7 @@ void ALevelLoadObjectPoolActor::LoadPoolInfoUI()
             ULevelObjectPool* pool = GetWorld()->GetSubsystem<UObjectPoolSubsystem>()->GetLevelObjectPool(GetLevel());
             check(pool);
             pool->SetLevelObjectPoolUI(PoolInfoUI);
-            UGameViewportSubsystem* viewport = GetGameInstance()->GetSubsystem<UGameViewportSubsystem>();
+            UGameViewportSubsystem* viewport = GetGameInstance()->GetEngine()->GetEngineSubsystem<UGameViewportSubsystem>();
             check(viewport);
             viewport->AddWidget(PoolInfoUI, FGameViewportWidgetSlot());
         }
